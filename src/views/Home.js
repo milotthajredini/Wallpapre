@@ -1,10 +1,13 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import Appbar from '../components/Layout/Appbar'
-
-function Home() {
+// import APICall from '../components/Photos/APICall'
+function Home(props) {
+  const { result } = props
+  console.log(props)
   return (
     <div>
       <Appbar />
+    
     </div>
   )
 }

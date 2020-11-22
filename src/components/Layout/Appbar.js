@@ -1,29 +1,53 @@
-import React from 'react'
-import { fade, makeStyles } from '@material-ui/core/styles'
+import React, { useState } from 'react'
+import PropTypes from 'prop-types'
+import { makeStyles, fade } from '@material-ui/core/styles'
 import AppBar from '@material-ui/core/AppBar'
-import Toolbar from '@material-ui/core/Toolbar'
-import IconButton from '@material-ui/core/IconButton'
+
 import Typography from '@material-ui/core/Typography'
-import InputBase from '@material-ui/core/InputBase'
-import MenuItem from '@material-ui/core/MenuItem'
-import Menu from '@material-ui/core/Menu'
-import MenuIcon from '@material-ui/icons/Menu'
+import Box from '@material-ui/core/Box'
 import SearchIcon from '@material-ui/icons/Search'
-import MoreIcon from '@material-ui/icons/MoreVert'
+import InputBase from '@material-ui/core/InputBase'
+import Grid from '@material-ui/core/Grid'
+import axios from 'axios'
+function TabPanel(props) {
+  const { children, value, index, ...other } = props
+
+  return (
+    <div
+      role='tabpanel'
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      {value === index && (
+        <Box p={3}>
+          <Typography>{children}</Typography>
+        </Box>
+      )}
+    </div>
+  )
+}
+
+TabPanel.propTypes = {
+  children: PropTypes.node,
+  index: PropTypes.any.isRequired,
+  value: PropTypes.any.isRequired,
+}
+
+function a11yProps(index) {
+  return {
+    id: `simple-tab-${index}`,
+    'aria-controls': `simple-tabpanel-${index}`,
+  }
+}
 
 const useStyles = makeStyles((theme) => ({
-  grow: {
+  root: {
     flexGrow: 1,
+    backgroundColor: theme.palette.background.paper,
   },
-  menuButton: {
-    marginRight: theme.spacing(2),
-  },
-  title: {
-    display: 'none',
-    [theme.breakpoints.up('sm')]: {
-      display: 'block',
-    },
-  },
+
   search: {
     position: 'relative',
     borderRadius: theme.shape.borderRadius,
@@ -32,11 +56,12 @@ const useStyles = makeStyles((theme) => ({
       backgroundColor: fade(theme.palette.common.white, 0.25),
     },
     marginRight: theme.spacing(2),
-    marginLeft: 0,
+    marginLeft: 10,
+    justifyContent: 'center',
     width: '100%',
     [theme.breakpoints.up('sm')]: {
-      marginLeft: theme.spacing(3),
-      width: 'auto',
+      marginLeft: theme.spacing(65),
+      width: '500px',
     },
   },
   searchIcon: {
@@ -48,104 +73,47 @@ const useStyles = makeStyles((theme) => ({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  inputRoot: {
-    color: 'inherit',
-  },
-  inputInput: {
-    padding: theme.spacing(1, 1, 1, 0),
-    // vertical padding + font size from searchIcon
-    paddingLeft: `calc(1em + ${theme.spacing(4)}px)`,
-    transition: theme.transitions.create('width'),
-    width: '100%',
-    [theme.breakpoints.up('md')]: {
-      width: '20ch',
-    },
-  },
-  sectionDesktop: {
-    display: 'none',
-    [theme.breakpoints.up('md')]: {
-      display: 'flex',
-    },
-  },
-  sectionMobile: {
-    display: 'flex',
-    [theme.breakpoints.up('md')]: {
-      display: 'none',
-    },
-  },
 }))
 
-export default function PrimarySearchAppBar() {
+export default function SimpleTabs(props) {
   const classes = useStyles()
-  const [anchorEl, setAnchorEl] = React.useState(null)
-  const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null)
+  const [value, setValue] = React.useState(0)
 
-  const isMenuOpen = Boolean(anchorEl)
-  const isMobileMenuOpen = Boolean(mobileMoreAnchorEl)
-
-  const handleMobileMenuClose = () => {
-    setMobileMoreAnchorEl(null)
+  const handleChange = (event, newValue) => {
+    setValue(newValue)
+    setPhoto(event.target.value)
   }
 
-  const handleMenuClose = () => {
-    setAnchorEl(null)
-    handleMobileMenuClose()
+  function handleSubmit(e) {
+    e.preventDefault()
+    console.log(photo)
+    const url =
+      'https://api.unsplash.com/search/photos?page=1&query=' +
+      photo +
+      '&client_id=' +
+      client
+    axios.get(url).then((response) => {
+      console.log(response)
+      setResult(response.data.results)
+    })
   }
-
-  const handleMobileMenuOpen = (event) => {
-    setMobileMoreAnchorEl(event.currentTarget)
-  }
-
-  const menuId = 'primary-search-account-menu'
-  const renderMenu = (
-    <Menu
-      anchorEl={anchorEl}
-      anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-      id={menuId}
-      keepMounted
-      transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-      open={isMenuOpen}
-      onClose={handleMenuClose}
-    >
-      <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-      <MenuItem onClick={handleMenuClose}>My account</MenuItem>
-    </Menu>
-  )
-
-  const mobileMenuId = 'primary-search-account-menu-mobile'
-  const renderMobileMenu = (
-    <Menu
-      anchorEl={mobileMoreAnchorEl}
-      anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-      id={mobileMenuId}
-      keepMounted
-      transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-      open={isMobileMenuOpen}
-      onClose={handleMobileMenuClose}
-    ></Menu>
+  const [result, setResult] = useState([])
+  const [photo, setPhoto] = useState('')
+  const [client, setClientId] = useState(
+    'C54w9fu4XeSPPvkJ6I6MFkyzMyBsiWVFG6THUMTXV-Q'
   )
 
   return (
-    <div className={classes.grow}>
+    <div className={classes.root}>
       <AppBar position='static'>
-        <Toolbar>
-          <IconButton
-            edge='start'
-            className={classes.menuButton}
-            color='inherit'
-            aria-label='open drawer'
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography className={classes.title} variant='h6' noWrap>
-            Wallpapre
-          </Typography>
+        <form onSubmit={handleSubmit}>
           <div className={classes.search}>
             <div className={classes.searchIcon}>
               <SearchIcon />
             </div>
             <InputBase
-              placeholder='Search…'
+              onChange={handleChange}
+              name='photo'
               classes={{
                 root: classes.inputRoot,
                 input: classes.inputInput,
@@ -153,23 +121,27 @@ export default function PrimarySearchAppBar() {
               inputProps={{ 'aria-label': 'search' }}
             />
           </div>
-          <div className={classes.grow} />
-
-          <div className={classes.sectionMobile}>
-            <IconButton
-              aria-label='show more'
-              aria-controls={mobileMenuId}
-              aria-haspopup='true'
-              onClick={handleMobileMenuOpen}
-              color='inherit'
-            >
-              <MoreIcon />
-            </IconButton>
-          </div>
-        </Toolbar>
+        </form>
       </AppBar>
-      {renderMobileMenu}
-      {renderMenu}
+
+      {result.map((photo) => {
+        return (
+          <div className='photosGrid'>
+            <img src={photo.urls.small} />
+
+            <a
+              href={`https://unsplash.com/photos/${photo.id}/download?force=true`}
+              target='_blank'
+              download
+            >
+              <button>
+                <i className='fas fa-download' />
+                Download File
+              </button>
+            </a>
+          </div>
+        )
+      })}
     </div>
   )
 }
